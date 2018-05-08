@@ -338,9 +338,14 @@ if __name__ == "__main__":
     #data = extract_feature(data)
     #testa = extract_feature(testa)
     data, testa = onehot_encode(data, testa)
-
-    #data, testa = extract_overall_features(data, testa)
-
+    '''
+    from sklearn.feature_extraction.text import CountVectorizer
+    data['item_property_list']=data['item_property_list'].apply(lambda x:' '.join(x.split(';')))
+    data_vec = CountVectorizer(min_df=40000).fit_transform(data['item_property_list'])
+    array = data_vec.toarray()
+    for i in range(array.shape[1]):
+        data['item_property'+str(i)] = pd.Series(array[:,i])
+    '''
     #split the dataset
     feature1 = data[(data.day >= 18) & (data.day <= 18)]
     dataset1 = data[data.day == 19]
@@ -375,7 +380,6 @@ if __name__ == "__main__":
     dataset3 = extract_feature_from_this_day(dataset3)
     dataset2 = extract_feature_from_this_day(dataset2)
     dataset1 = extract_feature_from_this_day(dataset1)
-
 
     #######################modeling and training###############################
 
@@ -426,6 +430,7 @@ if __name__ == "__main__":
 
         #num_iteration这里加不加都一样
         test['lgb_predict'] = clf.predict(test[features],num_iteration=clf.best_iteration)
+        print sorted(zip(clf.feature_importance(), features))[::-1]
         #test['lgb_predict'] = (test['lgb_predict0'] + test['lgb_predict1'])/2
         print log_loss(test[target], test['lgb_predict'])
 
